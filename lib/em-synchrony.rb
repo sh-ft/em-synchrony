@@ -60,10 +60,11 @@ module EventMachine
     # Deferrable object, simply pass it to EM::Synchrony.sync
     #
     def self.sync(df)
+      use_return = true
       f = Fiber.current
       xback = proc do |*args|
         if f == Fiber.current
-          return args.size == 1 ? args.first : args
+          return args.size == 1 ? args.first : args if use_return
         else
           f.resume(*args)
         end
@@ -73,6 +74,7 @@ module EventMachine
       df.errback(&xback)
 
       Fiber.yield
+      use_return = false
     end
 
 
